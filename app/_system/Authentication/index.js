@@ -56,6 +56,9 @@ class Authentication {
          }
          destroySession(){
            // to closed session and making user unidentify 
+            this.session=null;
+            this.state=false;
+            // redirect user to login page here
          }
 }
 module.exports={Authentication};
