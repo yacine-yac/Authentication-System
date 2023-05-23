@@ -10,15 +10,17 @@ server.use(express.urlencoded());
 
 // handle GET Requests
 server.get('/',(req,res)=>{
-            const sessionStatus=true; // check session open or closed
+            const sessionStatus=false; // check session open or closed
             const responsedFile=sessionStatus ? req.path : "/login/index.html";
-            res.sendFile(responsedFile,{root:__dirname});
+            res.sendFile(responsedFile,{root:__dirname}); 
 });
 
-// handle POST Requests
+//handle POST Requests
 server.post('/',(req,res,next)=>{
    const {Authentication}=require('./_system/Authentication/index')
-   Authentication(req,res,__dirname);
+  const auth= new Authentication(req,res,{errorPage:{root:__dirname,file:'/error/index.html'}});
+//   auth.identify().loadingResponse(__dirname,"/profil/index.html")
+auth.identify().ApiResponse();
 });
 
 server.get('/error',(req,res)=>{
