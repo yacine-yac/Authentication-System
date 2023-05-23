@@ -43,7 +43,8 @@ class Authentication {
                errorMessage :this.errorMessage,
                status:false
             }
-            this.res.send(response);
+            const responseStatus= this.state ? 200 : 401;
+            this.res.status(responseStatus).send(response);
          }
 
          loadingResponse(root,file){
