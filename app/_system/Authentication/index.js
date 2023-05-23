@@ -2,20 +2,60 @@
  * Handle Post Requests for Authenticat users
  */
 const db=require("../user.json");
-function Authentication(req,res,directoryRoot){
-             // check her credentials
-    const {email,psd}=req.body;
-     
-    if(email !=="undefined" && psd!=='undefined'){ 
-       
-       const responsedFile=(db.user.email===email && db.user.psd===psd ) ? "/profil/index.html" : "/login/index.html";
-       const error=db.user.email===email ? db.user.psd===psd  ? null  : "Please check your password"  : "Please check your email"
-       console.log(error)
-       res.sendFile(responsedFile,{root:directoryRoot})
-    }else{
-       res.redirect('/error'); 
-    }
 
+/**
+ * class to identify user with credentials
+ * It handle POST Requests with credentials name (email,psd)
+ */
+class Authentication {
+         constructor(req,res,params={errorPage:{root:'',file:"",urlParams:''}}){
+               this.req=req;
+               this.res=res;
+               this.state=false;
+               this.session=null;
+               this.params=params;
+               this.errorMessage=null;
+         }
+         identify(){
+            const data=this.req.body; 
+            if(!data?.email || !data?.psd){this.errorMessage="Error, please define credentials"; return this;}
+
+            // check user in database here
+
+
+            if(db.user.email != data?.email){this.errorMessage="Error, This email doesn't exists";return this;}
+            if(db.user.psd != data?.psd){this.errorMessage="Error, This password is not correct"; return this;}
+             
+             this.state=true;
+             this.setSession();
+             return this;
+         }
+         setSession(){
+            if(this.state === false) return {ErrorMessage:'User not identify'} ;
+            // set session here 
+         }
+         ApiResponse(){
+           const response= this.state ? {
+              session: this.session,
+              status:true
+            }
+            :{
+               errorMessage :this.errorMessage,
+               status:false
+            }
+            this.res.send(response);
+         }
+
+         loadingResponse(root,file){
+            const {fetchedFile,baseRoot}={
+               fetchedFile: this.state ? file : this.params.errorPage.file,
+               baseRoot: this.state ? root : this.params.errorPage.root
+            };
+            this.res.sendFile(fetchedFile,{root:baseRoot});
+         }
+         destroySession(){
+           // to closed session and making user unidentify 
+         }
 }
 module.exports={Authentication};
 
