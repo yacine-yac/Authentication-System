@@ -4,11 +4,11 @@
 const db=require("../user.json");
 
 /**
- * class to identify user with credentials
+ * class to identify user with credentials,
  * It handle POST Requests with credentials name (email,psd)
  */
 class Authentication {
-         constructor(req,res,params={errorPage:{root:'',file:"",urlParams:''}}){
+         constructor(req,res,params={errorPage:""}){
                this.req=req;
                this.res=res;
                this.state=false;
@@ -34,6 +34,10 @@ class Authentication {
             if(this.state === false) return {ErrorMessage:'User not identify'} ;
             // set session here 
          }
+         /**
+          * Handle responses 
+          * it returns error object or session object
+          */
          ApiResponse(){
            const response= this.state ? {
               session: this.session,
@@ -46,13 +50,19 @@ class Authentication {
             const responseStatus= this.state ? 200 : 401;
             this.res.status(responseStatus).send(response);
          }
-
+         /**
+          * Response to authentified user or redirect no authentified user
+          * @param {string} root define the root folder 
+          * @param {string} file define which file will be loaded in response
+          */
          loadingResponse(root,file){
-            const {fetchedFile,baseRoot}={
-               fetchedFile: this.state ? file : this.params.errorPage.file,
-               baseRoot: this.state ? root : this.params.errorPage.root
-            };
-            this.res.sendFile(fetchedFile,{root:baseRoot});
+            if(this.state){
+                        this.res.sendFile(file,{root});
+            }else{
+                        // when the user is not authentified (redirect him to another open page)
+                        const {errorPage}=this.params;
+                        this.res.redirect(`${errorPage}?errorMessage=${this.errorMessage}`);
+            }
          }
          destroySession(){
            // to closed session and making user unidentify 
