@@ -2,7 +2,7 @@
  * Handle Post Requests for Authenticat users
  */
 const db=require("../user.json");
-
+//  require('dotenv').config();
 /**
  * class to identify user with credentials,
  * It handle POST Requests with credentials name (email,psd)
@@ -17,7 +17,7 @@ class Authentication {
                this.errorMessage=null;
          }
          identify(){
-            const data=this.req.body; 
+            const data=this.req.body; console.log('ezee0.',data)
             if(!data?.email || !data?.psd){this.errorMessage="Error, please define credentials"; return this;}
 
             // check user in database here
@@ -25,14 +25,18 @@ class Authentication {
 
             if(db.user.email != data?.email){this.errorMessage="Error, This email doesn't exists";return this;}
             if(db.user.psd != data?.psd){this.errorMessage="Error, This password is not correct"; return this;}
-             
+
              this.state=true;
              this.setSession();
              return this;
          }
          setSession(){
             if(this.state === false) return {ErrorMessage:'User not identify'} ;
-            // set session here 
+            // set session here  
+            const jwt=require('jsonwebtoken');
+            require('dotenv').config(); 
+            const token= jwt.sign({user:{name:"yacinbe"}},process.env.SECRET,{expiresIn: "1h"});
+            this.session=token;
          }
          /**
           * Handle responses 
@@ -57,7 +61,8 @@ class Authentication {
           */
          loadingResponse(root,file){
             if(this.state){
-                        this.res.sendFile(file,{root});
+                        this.res.cookie('Authorization',this.session)
+                        this.res.redirect("/profil");
             }else{
                         // when the user is not authentified (redirect him to another open page)
                         const {errorPage}=this.params;
